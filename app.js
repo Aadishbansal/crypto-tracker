@@ -1,6 +1,6 @@
-const dropdownCoin = document.getElementById("coin");
-const dropdownCurrency = document.getElementById("currency");
 const baseUrl = "https://api.coingecko.com/api/v3";
+let setIntervalHandler;
+
 const displayError = () => {
   const main = document.getElementById("main");
   const alertTemplate = `  <div class="alert alert-danger" role="alert">
@@ -24,37 +24,11 @@ const fetchCurrenys = async () => {
   const res = await fetch(`${baseUrl}/simple/supported_vs_currencies`);
   return res.json();
 };
-const displayCoinOptions = async () => {
-  try {
-    const options = await fetchCoins();
-    options.forEach((ele) => {
-      const newOption = document.createElement("option");
-      newOption.value = ele.id;
-      newOption.text = ele.name;
-      dropdownCoin.appendChild(newOption);
-    });
-  } catch (err) {
-    displayError();
-  }
-};
-const displayCurrencyOptions = async () => {
-  try {
-    const options = await fetchCurrenys();
-    options.forEach((ele) => {
-      const newOption = document.createElement("option");
-      newOption.value = ele;
-      newOption.text = ele.toUpperCase();
-      if (ele === "usd") newOption.selected = true;
-      dropdownCurrency.appendChild(newOption);
-    });
-  } catch (err) {
-    displayError();
-  }
-};
+
 const displayCoin = (res, currency) => {
   const lastUpdated = res.last_updated.split("T")[0];
   const imageUrl = res.image.thumb;
-  const name = res.name;
+  const { name } = res;
   const marketCap = res.market_data.market_cap[currency].toLocaleString();
   const price = res.market_data.current_price[currency].toLocaleString();
   const change24 = res.market_data.price_change_24h_in_currency[currency];
@@ -99,6 +73,50 @@ const displayCoin = (res, currency) => {
 
   section.innerHTML = tableTamplate;
 };
+const dataLocalStorage = localStorage.getItem("data");
+if (dataLocalStorage) {
+  const [res, currency] = JSON.parse(dataLocalStorage);
+  displayCoin(res, currency);
+}
+const displayCoinOptions = async () => {
+  try {
+    const options = await fetchCoins();
+    const dropdownCoin = document.getElementById("coin");
+
+    options.forEach((ele) => {
+      const newOption = document.createElement("option");
+      newOption.value = ele.id;
+      newOption.text = ele.name;
+      if (dataLocalStorage) {
+        const { name } = JSON.parse(dataLocalStorage)[0];
+        if (ele.name === name) newOption.selected = true;
+      }
+      dropdownCoin.appendChild(newOption);
+    });
+  } catch (err) {
+    displayError();
+  }
+};
+const displayCurrencyOptions = async () => {
+  try {
+    const options = await fetchCurrenys();
+    const dropdownCurrency = document.getElementById("currency");
+
+    options.forEach((ele) => {
+      const newOption = document.createElement("option");
+      newOption.value = ele;
+      newOption.text = ele.toUpperCase();
+      if (dataLocalStorage) {
+        const currency = JSON.parse(dataLocalStorage)[1];
+        if (ele === currency) newOption.selected = true;
+      }
+
+      dropdownCurrency.appendChild(newOption);
+    });
+  } catch (err) {
+    displayError();
+  }
+};
 displayCoinOptions();
 displayCurrencyOptions();
 const fetchCoin = (id, currency) => {
@@ -106,14 +124,19 @@ const fetchCoin = (id, currency) => {
     .then((res) => res.json())
     .then((res) => {
       displayCoin(res, currency);
+      localStorage.setItem("data", JSON.stringify([res, currency]));
     })
     .catch((err) => displayError());
 };
 const onSubmit = (event) => {
   event.preventDefault();
-  const coinId = dropdownCoin.value;
-  const currency = dropdownCurrency.value;
+  if (setIntervalHandler) {
+    clearInterval(setIntervalHandler);
+  }
+  const coinId = document.getElementById("coin").value;
+  const currency = document.getElementById("currency").value;
   fetchCoin(coinId, currency);
+  setIntervalHandler = setInterval(() => fetchCoin(coinId, currency), 30000);
 };
 
 const form = document.getElementById("form-crypto");
