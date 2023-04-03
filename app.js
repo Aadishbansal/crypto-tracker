@@ -26,7 +26,7 @@ const fetchCurrenys = async () => {
 };
 
 const displayCoin = (res, currency) => {
-  const lastUpdated = res.last_updated.split("T")[0];
+  const lastUpdated = res.last_updated.split("T").join(" ");
   const imageUrl = res.image.thumb;
   const { name } = res;
   const marketCap = res.market_data.market_cap[currency].toLocaleString();
