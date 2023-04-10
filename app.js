@@ -1,5 +1,5 @@
 const baseUrl = "https://api.coingecko.com/api/v3";
-let setIntervalHandler;
+let interval;
 
 const displayError = () => {
   const main = document.getElementById("main");
@@ -73,11 +73,7 @@ const displayCoin = (res, currency) => {
 
   section.innerHTML = tableTamplate;
 };
-const dataLocalStorage = localStorage.getItem("data");
-if (dataLocalStorage) {
-  const [res, currency] = JSON.parse(dataLocalStorage);
-  displayCoin(res, currency);
-}
+
 const displayCoinOptions = async () => {
   try {
     const options = await fetchCoins();
@@ -117,8 +113,6 @@ const displayCurrencyOptions = async () => {
     displayError();
   }
 };
-displayCoinOptions();
-displayCurrencyOptions();
 const fetchCoin = (id, currency) => {
   fetch(`${baseUrl}/coins/${id}`)
     .then((res) => res.json())
@@ -127,16 +121,27 @@ const fetchCoin = (id, currency) => {
       localStorage.setItem("data", JSON.stringify([res, currency]));
     })
     .catch((err) => displayError());
+  intervalHandler(id, currency);
 };
+const intervalHandler = (id, currency) => {
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => fetchCoin(id, currency), 30000);
+};
+const dataLocalStorage = localStorage.getItem("data");
+if (dataLocalStorage) {
+  const [res, currency] = JSON.parse(dataLocalStorage);
+  fetchCoin(res.id, currency);
+}
+displayCoinOptions();
+displayCurrencyOptions();
+
 const onSubmit = (event) => {
   event.preventDefault();
-  if (setIntervalHandler) {
-    clearInterval(setIntervalHandler);
-  }
   const coinId = document.getElementById("coin").value;
   const currency = document.getElementById("currency").value;
   fetchCoin(coinId, currency);
-  setIntervalHandler = setInterval(() => fetchCoin(coinId, currency), 30000);
 };
 
 const form = document.getElementById("form-crypto");
