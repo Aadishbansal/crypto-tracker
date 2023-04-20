@@ -113,6 +113,12 @@ const displayCurrencyOptions = async () => {
     displayError();
   }
 };
+const intervalHandler = (id, currency) => {
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => fetchCoin(id, currency), 30000);
+};
 const fetchCoin = (id, currency) => {
   fetch(`${baseUrl}/coins/${id}`)
     .then((res) => res.json())
@@ -123,12 +129,7 @@ const fetchCoin = (id, currency) => {
     .catch((err) => displayError());
   intervalHandler(id, currency);
 };
-const intervalHandler = (id, currency) => {
-  if (interval) {
-    clearInterval(interval);
-  }
-  interval = setInterval(() => fetchCoin(id, currency), 30000);
-};
+
 const dataLocalStorage = localStorage.getItem("data");
 if (dataLocalStorage) {
   const [res, currency] = JSON.parse(dataLocalStorage);
