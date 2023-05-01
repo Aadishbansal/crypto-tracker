@@ -123,6 +123,8 @@ const fetchCoin = (id, currency) => {
   fetch(`${baseUrl}/coins/${id}`)
     .then((res) => res.json())
     .then((res) => {
+      testing(res.id, currency);
+
       displayCoin(res, currency);
       localStorage.setItem("data", JSON.stringify([res, currency]));
     })
@@ -144,7 +146,6 @@ const testing = (id, currency) => {
 const dataLocalStorage = localStorage.getItem("data");
 if (dataLocalStorage) {
   const [res, currency] = JSON.parse(dataLocalStorage);
-  testing(res.id, currency);
   fetchCoin(res.id, currency);
 }
 displayCoinOptions();
