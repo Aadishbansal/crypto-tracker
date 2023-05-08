@@ -123,7 +123,6 @@ const fetchCoin = (id, currency) => {
   fetch(`${baseUrl}/coins/${id}`)
     .then((res) => res.json())
     .then((res) => {
-      testing(res.id, currency);
 
       displayCoin(res, currency);
       localStorage.setItem("data", JSON.stringify([res, currency]));
@@ -131,18 +130,7 @@ const fetchCoin = (id, currency) => {
     .catch((err) => displayError());
   intervalHandler(id, currency);
 };
-const testing = (id, currency) => {
-  const note = document.createElement("p");
-  note.innerText = "This is for testing purpose only \n please ignore";
-  const paraId = document.createElement("p");
-  const paraCurrency = document.createElement("p");
-  paraId.innerText = id;
-  paraCurrency.innerHTML = currency;
-  const test = document.getElementById("test");
-  test.appendChild(note);
-  test.appendChild(paraId);
-  test.appendChild(paraCurrency);
-};
+
 const dataLocalStorage = localStorage.getItem("data");
 if (dataLocalStorage) {
   const [res, currency] = JSON.parse(dataLocalStorage);
